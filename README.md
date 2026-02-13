@@ -170,7 +170,7 @@ Every signal generated must include a "Provenance Receipt" for institutional aud
 - Run unit and integration tests:
 
   ```bash
-  PYTHONPATH=. pytest tests/
+  pytest
   ```
 
 ### Usage
