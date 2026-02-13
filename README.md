@@ -92,3 +92,93 @@ Every signal generated must include a "Provenance Receipt" for institutional aud
 - **Recommended Models:** Qwen2.5-7B or Granite-3-8B ($T=0.0$, Fixed Seed) for 100% routing consistency.
 - **Decoding Strategy:** Implement Constrained Decoding (logit-level masking) to physically prevent hallucinations of non-integer tokens in the output schema.
 - **Institutional Disclaimer:** This architecture is designed for audit-grade reproducibility. Results are bit-for-bit identical given the same input data, LLM seed, and frozen library version.
+
+## Project Structure
+
+```text
+.
+├── Dockerfile
+├── LICENSE
+├── README.md
+├── requirements.txt
+├── src
+│   ├── api
+│   │   ├── main.py
+│   │   └── models.py
+│   ├── library
+│   │   ├── core.py
+│   │   ├── momentum.py
+│   │   ├── trend.py
+│   │   └── volatility.py
+│   ├── orchestrator
+│   │   ├── engine.py
+│   │   ├── hooks.py
+│   │   └── stability.py
+│   ├── router
+│   │   ├── interface.py
+│   │   └── mock_router.py
+│   └── utils
+│       ├── data_loader.py
+│       └── smoothing.py
+└── tests
+    ├── integration
+    │   └── test_pipeline.py
+    └── unit
+        └── test_library.py
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.11+
+- Docker (optional)
+
+### Installation
+
+1. Clone the repository
+2. Create virtual environment:
+
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
+
+3. Install dependencies:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+### Running the Application
+
+- **Local:**
+
+  ```bash
+  uvicorn src.api.main:app --reload
+  ```
+
+- **Docker:**
+
+  ```bash
+  docker build -t quant-orchestrator .
+  docker run -p 8000:8000 quant-orchestrator
+  ```
+
+### Testing
+
+- Run unit and integration tests:
+
+  ```bash
+  PYTHONPATH=. pytest tests/
+  ```
+
+### Usage
+
+**Example Request:**
+
+```bash
+curl -X POST "http://localhost:8000/query" \
+     -H "Content-Type: application/json" \
+     -d '{"query": "Show me the trend of BTC", "recursive_stability": false}'
+```
