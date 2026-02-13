@@ -29,41 +29,77 @@ class Orchestrator:
     def execute(self, query: str) -> dict:
         """
         Main entry point: Parse intent -> Generate Blueprint -> Execute.
+        Support for Multi-Asset Cross-Sectional Execution and Synthetic Positions.
         """
         blueprint = self.router.parse_intent(query)
+        assets = blueprint.assets if blueprint.assets else ["BTC"]
 
-        # Determine assets (for simplicity, assume single asset first, or list)
-        asset = blueprint.assets[0] if blueprint.assets else "BTC"
-        prices = load_data(asset, limit=100)  # Mock data loader
+        # 1. Resolve Data (Synthetic or Direct)
+        # If asset is "A-B", we compute difference.
+        # For simplicity, if ANY asset string contains arithmetic, we treat it as synthetic.
+        # Real implementation would have a robust parser.
+        final_results = []
 
-        results = []
-        for step in blueprint.steps:
-            func = self.registry.get(step.function_name)
-            if not func:
-                raise ValueError(f"Function {step.function_name} not found in registry")
+        for asset in assets:
+            if "-" in asset and " " not in asset:  # Simple A-B check
+                parts = asset.split("-")
+                p1 = load_data(parts[0], limit=100)
+                p2 = load_data(parts[1], limit=100)
+                prices = p1 - p2  # Synthetic Position
+            else:
+                prices = load_data(asset, limit=100)
 
-            # PreTool Hook
-            LifecycleHooks.pre_tool_use(step.function_name, step.args, prices)
+            asset_results = []
+            for step in blueprint.steps:
+                func = self.registry.get(step.function_name)
+                if not func:
+                    raise ValueError(
+                        f"Function {step.function_name} not found in registry"
+                    )
 
-            # Execute
-            try:
-                # Assuming simple kwargs unpacking for now.
-                # In strict "frozen" mode, args might be fixed or come from blueprint.
-                res = func(prices, **step.args)
-            except Exception as e:
-                raise RuntimeError(f"Execution failed for {step.function_name}: {e}")
+                LifecycleHooks.pre_tool_use(step.function_name, step.args, prices)
+                try:
+                    res = func(prices, **step.args)
+                except Exception as e:
+                    raise RuntimeError(
+                        f"Execution failed for {step.function_name}: {e}"
+                    )
+                LifecycleHooks.post_tool_use(step.function_name, res, len(prices))
+                asset_results.append(res)
 
-            # PostTool Hook
-            LifecycleHooks.post_tool_use(step.function_name, res, len(prices))
-            results.append(res)
+            # Compose per asset (Vertical Composition)
+            # If multiple steps, we verify how to combine them.
+            # Usually strict pipeline implies sequential or composed signal.
+            # Here we assume the blueprint composition applies to the Steps *Result*.
+            # But wait, blueprint.composition is for combining the final results?
+            # Let's clarify: Blueprint steps -> [Result1, Result2].
+            # Compose -> Final Result for Asset A.
 
-        # Composition Logic
-        final_regime = self._compose(results, blueprint.composition)
+            # If we have multiple assets, we might want to return per-asset OR aggregated.
+            # "Cross-sectional sum" implies aggregating across assets.
+
+            per_asset_regime = self._compose(asset_results, blueprint.composition)
+            final_results.append(per_asset_regime)
+
+        # 2. Cross-Sectional Aggregation (if multiple assets)
+        # If > 1 asset, we need a specific aggregation strategy.
+        # For "Breadth", we SUM. For others, maybe just list?
+        # The Orchestration logic needs to know if it's a Breadth query vs Portfolio query.
+        # For this "Thin Agent", we'll infer from composition:
+        # If composition is SUM/AVG and multiple assets -> Cross-Sectional.
+        # Otherwise, we might default to returning the first or list.
+        # The prompt says "Cross-sectional sum logic gate".
+
+        if len(final_results) > 1:
+            # We treat the list of asset regimes as inputs to compose
+            final_regime = self._compose(final_results, blueprint.composition)
+        else:
+            final_regime = final_results[0]
 
         return {
             "regime": final_regime.tolist(),
             "blueprint": blueprint.model_dump(),
-            "provenance": "Executed via Quant Library Orchestrator v1.0",
+            "provenance": "Executed via Quant Library Orchestrator v1.1 (Multi-Asset)",
         }
 
     def _compose(self, results: list[np.ndarray], method: str) -> np.ndarray:
