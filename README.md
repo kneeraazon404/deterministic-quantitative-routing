@@ -208,3 +208,130 @@ python orchestrator.py --query "Are the Generals decoupling from the NDX?"
 ---
 
 **Disclaimer**: This platform is for quantitative analysis and software orchestration. It does not constitute financial advice. The "Frozen Math" guarantees deterministic execution, not market profits.
+
+### Why the Current Project is "Not Right"
+
+1.  **Incorrect Mathematical Logic (XOR vs. Averaging):**
+    *   **Current State:** The developer assumed the comparison logic involved "GATE methods like XOR".
+    *   **Requirement:** The client specified that when combining outputs (e.g., "Average their outputs"), the logic is an **element-wise mean rounded to the nearest integer** to maintain the `{0,1}` binary structure. XOR would produce a `1` only when inputs disagree, which is not the request.
+
+2.  **Incorrect Stability Metric:**
+    *   **Current State:** Likely uses standard convergence or the aforementioned XOR logic.
+    *   **Requirement:** Stability must be measured using **Hamming distance** (the count of bit flips between passes). The loop continues until this distance is zero or $<1\%$ of the array length.
+
+3.  **Over-Engineering of Data Pipelines:**
+    *   **Current State:** The developer focused on data handling and "integrating APIs".
+    *   **Requirement:** The functions encapsulate data alignment and warmup. The orchestrator should not handle data engineering; it should strictly handle **routing** and **broadcasting** (e.g., stretching a daily array to match a 5-minute array).
+
+4.  **AI-Generated Hallucinations:**
+    *   **Current State:** Built by AI agents without the underlying "frozen" library. This implies the code likely contains standard technical indicators (RSI, MACD) which are irrelevant here.
+    *   **Requirement:** The system must act as a wrapper around a specific, hypothetical library of 100 parameter-less functions.
+
+---
+
+### The Differences You Need to Make
+
+To fix this repository, you must strip away any market prediction logic and focus purely on the **structural manipulation of integer arrays**.
+
+1.  **Delete the Math:** Remove any code trying to calculate moving averages or regressions. Replace it with dummy "frozen" functions that simply accept `float[]` and return `int[]`.
+2.  **Implement the "Router":** Create a parser that takes a string and outputs a list of function calls, not a trading signal.
+3.  **Implement "Recursion":** Add a loop that feeds the output of a function back into itself as the input (treating the binary state as a price series) until the Hamming distance settles.
+
+---
+
+### Updated README.md
+
+Below is the corrected README. It treats the project as an **Orchestration Layer**, not a trading bot.
+
+```bash
+# Deterministic Quantitative Orchestration Layer
+
+## Overview
+This project is an LLM-driven orchestration layer designed to sit between natural language queries and a library of proprietary, deterministic mathematical functions. 
+
+**The Philosophy:**
+*   **The Math is Frozen:** We do not write the quantitative functions. We route to them.
+*   **The Logic is Stateless:** Functions have no memory.
+*   **The Output is Binary:** All functions return arrays of `{0, 1}` integers.
+
+## Architecture
+
+The system follows a strict four-step pipeline:
+1.  **Intent Parsing:** LLM maps natural language to a structured Execution Plan.
+2.  **Routing:** Map plan strings to actual Python callables.
+3.  **Composition:** Combine independent arrays via element-wise operations (Mean/Round).
+4.  **Recursion (Optional):** Re-run outputs through functions until stability (Hamming distance) is achieved.
+
+---
+
+## Development Steps & Logic
+
+### Step 1: The "Frozen" Library Mock
+*Since we do not have the proprietary library, we mock the interface.*
+Create a module `lib.py` with functions that strictly follow this signature:
+`prices: array[float] -> states: array[int]`
+
+These functions must be parameter-less. They act as "black boxes."
+
+```python
+# Example Mock
+def function_A(prices):
+    # Mock logic: Returns 1 if price > mean, else 0
+    return (prices > np.mean(prices)).astype(int)
+```
+
+### Step 2: Intent Parsing (LLM Layer)
+The LLM does **not** do math. It outputs a JSON plan.
+*   **Input:** "Run A and C. Average their outputs."
+*   **Output:**
+    ```json
+    {
+      "operations": [
+        {"function": "function_A", "input": "data_source"},
+        {"function": "function_C", "input": "data_source"}
+      ],
+      "composition": "average"
+    }
+    ```
+
+### Step 3: Composition Logic
+**CRITICAL:** Do not use XOR.
+When combining multiple binary arrays (e.g., "Fear Index" from Gold, Bonds, VIX), calculate the element-wise mean and round to the nearest integer.
+
+*   **Logic:**
+    *   Input: `` and ``
+    *   Mean: `[0.5, 1.0, 0.0]`
+    *   Rounded Output: `` (Maintains binary structure).
+
+### Step 4: Recursive Stability (The "Noise" Loop)
+For queries requesting stability (e.g., "Run until stable"), implement a feedback loop.
+
+*   **Metric:** Calculate **Hamming Distance** (sum of absolute differences) between `iteration_N` and `iteration_N-1`.
+*   **Exit Conditions:**
+    1.  Hamming distance == 0 (Perfect stability).
+    2.  Hamming distance < 1% of array length (Acceptable noise).
+    3.  `MAX_ITER` reached (Circuit Breaker).
+*   **Safety:** If Circuit Breaker is hit, flag result as "Unstable." Never silently return garbage.
+
+### Step 5: Multi-Timeframe Broadcasting
+If a user compares 5-minute data with Daily data:
+1.  Fetch both arrays.
+2.  **Broadcast** the Daily array to match the length of the 5-minute array (repeat the daily value for every 5-minute bar in that day).
+3.  Run the comparison function.
+*Note: The functions handle their own internal alignment; the orchestrator handles the cross-series broadcasting.*
+
+## Usage Scenarios
+
+### 1. "Generals vs. Army"
+*   **Query:** "Compare Big 7 Tech vs NDX 100."
+*   **Execution:** Run `Regime(Big7)` and `Regime(NDX100)`. Return element-wise comparison.
+
+### 2. "Regime of Regime"
+*   **Query:** "Output is noisy. Run regime on the regime."
+*   **Execution:** 
+    *   `Pass 1 = Function(Price)`
+    *   `Pass 2 = Function(Pass 1)` 
+    *   Repeat until Hamming distance between passes is minimal.
+
+## Disclaimer
+This architecture assumes the existence of the underlying quantitative library. This code is the **routing logic only**.
