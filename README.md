@@ -21,7 +21,7 @@ Instead of asking an LLM to *perform* math, this system restricts the LLM to **s
 
 The platform operates on a strict **Inversion of Control** model. The LLM is treated as a non-deterministic kernel process wrapped in a deterministic runtime environment.
 
-```mermaid
+```bash
 graph TD
     User[User Query] -->|Natural Language| Orch[Kernel Orchestrator]
     
