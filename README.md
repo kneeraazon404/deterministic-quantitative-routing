@@ -1,7 +1,3 @@
-Here is an elegant, technical, and stepwise `README.md` file designed for a GitHub repository. It synthesizes the architectural principles of **Deterministic AI Orchestration** (Thin Agent/Fat Platform) with the domain-specific rigor of **Quantitative Finance** (Ordinal Patterns/Information Theory).
-
-***
-
 # Senior AI Orchestrator: Deterministic Quantitative Routing Platform
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
@@ -21,15 +17,15 @@ Instead of asking an LLM to *perform* math, this system restricts the LLM to **s
 
 The platform operates on a strict **Inversion of Control** model. The LLM is treated as a non-deterministic kernel process wrapped in a deterministic runtime environment.
 
-```bash
+```markdown
 graph TD
     User[User Query] -->|Natural Language| Orch[Kernel Orchestrator]
     
-    subgraph "Deterministic Runtime (Fat Platform)"
+    subgraph "Deterministic Runtime (Fat Platform)."
         Orch -->|JSON Schema| Gateway[Gateway Router]
         Gateway -->|JIT Load| Skill[Skill Library]
         
-        subgraph "Frozen Math Core"
+        subgraph "Frozen Math Core."
             Skill -->|Dispatch| OPA[Ordinal Pattern Analysis]
             Skill -->|Dispatch| IGT[Info-Geometric Theory]
             Skill -->|Dispatch| RSE[Recursive Stability Engine]
