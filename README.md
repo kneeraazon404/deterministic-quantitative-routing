@@ -7,7 +7,7 @@
 
 ## 📋 Executive Summary
 
-**Senior AI Orchestrator** is an institutional-grade platform that solves the **Context-Capability Paradox** in autonomous financial analysis. It replaces the fragile "Thick Agent" paradigm—prone to hallucination and context drift—with a **Thin Agent, Fat Platform (TAFP)** architecture.
+This is an institutional-grade platform that solves the **Context-Capability Paradox** in autonomous financial analysis. It replaces the fragile "Thick Agent" paradigm—prone to hallucination and context drift—with a **Thin Agent, Fat Platform (TAFP)** architecture.
 
 Instead of asking an LLM to *perform* math, this system restricts the LLM to **semantic routing** (Kernel Mode), delegating execution to a library of "Frozen Math" functions (User Mode) based on **Ordinal Pattern Analysis** and **Information Geometry**. The result is a system that offers the semantic flexibility of generative AI with the deterministic guarantees required for regulatory auditability and capital deployment.
 
@@ -229,7 +229,7 @@ python orchestrator.py --query "Are the Generals decoupling from the NDX?"
 
 To fix this repository, you must strip away any market prediction logic and focus purely on the **structural manipulation of integer arrays**.
 
-1.  **Delete the Math:** Remove any code trying to calculate moving averages or regressions. Replace it with dummy "frozen" functions that simply accept `float[]` and return `int[]`.
+1.  **Delete the Math:** Remove any code trying to calculate moving averages or regressions. Replace it with dummy "frozen" functions that accept `float[]` and return `int[]`.
 2.  **Implement the "Router":** Create a parser that takes a string and outputs a list of function calls, not a trading signal.
 3.  **Implement "Recursion":** Add a loop that feeds the output of a function back into itself as the input (treating the binary state as a price series) until the Hamming distance settles.
 
@@ -243,7 +243,7 @@ Below is the corrected README. It treats the project as an **Orchestration Layer
 # Deterministic Quantitative Orchestration Layer
 
 ## Overview
-This project is an LLM-driven orchestration layer designed to sit between natural language queries and a library of proprietary, deterministic mathematical functions. 
+This project is an LLM-driven orchestration layer that sits between natural language queries and a library of proprietary, deterministic mathematical functions. 
 
 **The Philosophy:**
 *   **The Math is Frozen:** We do not write the quantitative functions. We route to them.
@@ -267,7 +267,7 @@ The system follows a strict four-step pipeline:
 Create a module `lib.py` with functions that strictly follow this signature:
 `prices: array[float] -> states: array[int]`
 
-These functions must be parameter-less. They act as "black boxes."
+These functions must be parameterless. They act as "black boxes."
 
 ```python
 # Example Mock
@@ -307,7 +307,7 @@ For queries requesting stability (e.g., "Run until stable"), implement a feedbac
     1.  Hamming distance == 0 (Perfect stability).
     2.  Hamming distance < 1% of array length (Acceptable noise).
     3.  `MAX_ITER` reached (Circuit Breaker).
-*   **Safety:** If Circuit Breaker is hit, flag result as "Unstable." Never silently return garbage.
+*   **Safety:** If the Circuit Breaker is hit, flag the result as "Unstable." Never silently return garbage.
 
 ### Step 5: Multi-Timeframe Broadcasting
 If a user compares 5-minute data with Daily data:
@@ -327,7 +327,7 @@ If a user compares 5-minute data with Daily data:
 *   **Execution:** 
     *   `Pass 1 = Function(Price)`
     *   `Pass 2 = Function(Pass 1)` 
-    *   Repeat until Hamming distance between passes is minimal.
+    *   Repeat until the Hamming distance between passes is minimal.
 
 ## Disclaimer
 This architecture assumes the existence of the underlying quantitative library. This code is the **routing logic only**.
